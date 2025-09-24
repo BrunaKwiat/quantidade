@@ -1,0 +1,333 @@
+<!doctype html>
+<html lang="pt-BR" data-theme="claro">
+
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>RQ-504-01 — Registro de Inspeção</title>
+  <meta name="color-scheme" content="light dark" />
+  <meta name="theme-color" content="#0E3554" />
+
+  <!-- CSS -->
+  <link rel="stylesheet" href="style.css" />
+
+  <!-- jsPDF + AutoTable (carregue APENAS uma vez cada) -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
+
+  <!-- Script principal -->
+  <script defer src="script.js"></script>
+</head>
+
+<body>
+  <noscript>
+    <div class="noscript">
+      ⚠️ Ative o JavaScript para usar salvar, PDF, adicionar linhas e outros recursos.
+    </div>
+  </noscript>
+
+  <!-- Skip link -->
+  <a class="sr-only sr-only-focusable" href="#conteudo">Pular para o conteúdo</a>
+
+  <!-- Topbar -->
+  <header class="topbar" role="banner">
+    <div class="container topbar__inner">
+      <div class="brand">
+        <img src="shiva.png" alt="Shiva Conexões — Logo" />
+        <div class="brand-text">
+          <h1 class="brand-title">RQ-504-01 — Registro de Inspeção</h1>
+        </div>
+      </div>
+
+      <nav class="actions" aria-label="Ações do relatório">
+        <ul class="btn-group-list">
+          <li><button id="btnSalvar" class="btn btn--primary" type="button">💾 Salvar</button></li>
+          <li>
+            <button id="btnPDF" class="btn btn--secondary" type="button">📄 PDF</button>
+            <button id="btnImprimir" class="btn btn--secondary" type="button">🖨 Imprimir</button>
+          </li>
+          <li><button id="btnTemas" class="btn btn--secondary" type="button">🎨 Temas</button></li>
+        </ul>
+      </nav>
+    </div>
+  </header>
+
+  <!-- Layout -->
+  <main class="layout" id="app" role="main">
+    <div class="container">
+
+      <!-- Toasts ARIA -->
+      <div id="ariaLive" class="sr-only" aria-live="polite" aria-atomic="true"></div>
+
+      <!-- Lista de relatórios -->
+      <aside class="lista-relatorios" aria-labelledby="tituloRelatorios">
+        <div class="aside-head">
+          <h2 id="tituloRelatorios">Relatórios</h2>
+          <div class="search-group">
+            <label for="filtroLista" class="sr-only">Buscar relatórios</label>
+            <input id="filtroLista" type="search" placeholder="Buscar..." autocomplete="off" inputmode="search" />
+            <button id="btnBuscarRelatorio" class="btn btn--secondary" type="button" aria-label="Buscar relatório">🔎</button>
+          </div>
+        </div>
+        <ul id="listaRelatorios" aria-live="polite"></ul>
+      </aside>
+
+      <!-- Conteúdo principal -->
+      <section class="conteudo" id="conteudo" tabindex="-1">
+        <form id="formRelatorio" novalidate>
+          <!-- Identificação -->
+          <fieldset>
+            <legend>Identificação</legend>
+            <div class="grid-identificacao">
+              <div class="field short">
+                <label for="ordemProducao">Nº da Ficha de Produção</label>
+                <!-- Troca de type=number para type=text com validação: preserva zeros à esquerda e evita rolagem acidental -->
+                <input type="text" id="ordemProducao" name="ordemProducao" required
+                       inputmode="numeric" pattern="^[0-9]{1,}$" autocomplete="off"
+                       placeholder="Ex.: 000123" />
+              </div>
+              <div class="field">
+                <label for="quantidadeaverificar">Quantidade a verificar</label>
+                <!-- Mantém número, mas com limites e teclado numérico móvel -->
+                <input type="number" id="quantidadeaverificar" name="quantidadeaverificar" min="1" step="1"
+                       inputmode="numeric" placeholder="Ex.: 50" />
+              </div>
+              <div class="field">
+                <label for="quandoexecutarinspecao">Quando executar a inspeção</label>
+                <!-- Troca para data e hora locais -->
+                <input type="datetime-local" id="quandoexecutarinspecao" name="quandoexecutarinspecao" />
+              </div>
+              <div class="field">
+                <label for="dataRelatorio">Data</label>
+                <input type="date" id="dataRelatorio" name="dataRelatorio" required />
+              </div>
+            </div>
+          </fieldset>
+
+          <!-- Produtos -->
+          <fieldset>
+            <legend>Produtos Inspecionados</legend>
+            <table id="tabelaProdutos">
+              <colgroup>
+                <col style="width: 38%" />
+                <col style="width: 18%" />
+                <col style="width: 18%" />
+                <col style="width: 18%" />
+                <col style="width: 8%" />
+              </colgroup>
+              <thead>
+                <tr>
+                  <th scope="col">Produto</th>
+                  <th scope="col">Lote</th>
+                  <th scope="col">Data</th>
+                  <th scope="col">Quantidade</th>
+                  <th scope="col">Ação</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <!-- Troca para type=search com datalist para sugerir produtos comuns -->
+                  <td>
+                    <input type="search" name="descricao[]" list="produtosSug" required placeholder="Produto" autocomplete="on" />
+                    <datalist id="produtosSug">
+                      <option value="Tubo PVC DN75" />
+                      <option value="Conector 90º DN50" />
+                      <option value="Anel de Vedação EPDM" />
+                    </datalist>
+                  </td>
+                  <!-- Lote como texto com regex básico e dica; mantém letras/números e hífen/underscore -->
+                  <td>
+                    <input type="text" name="lote[]" placeholder="Ex.: L2025-09" autocapitalize="characters"
+                           pattern="^[A-Za-z0-9_-]{1,}$" />
+                  </td>
+                  <td><input type="date" name="data[]" /></td>
+                  <td><input type="number" name="quantidade[]" min="1" step="1" inputmode="numeric" /></td>
+                  <td><button type="button" class="remover" aria-label="Remover linha">❌</button></td>
+                </tr>
+              </tbody>
+            </table>
+            <div class="table-actions">
+              <button type="button" id="addLinha" class="btn">➕ Adicionar linha</button>
+            </div>
+          </fieldset>
+
+          <!-- Ensaios -->
+          <fieldset>
+            <legend>Ensaios Realizados</legend>
+            <table id="tabelaEnsaios">
+              <colgroup>
+                <col style="width: 30%" />
+                <col style="width: 15%" />
+                <col style="width: 35%" />
+                <col style="width: 12%" />
+                <col style="width: 8%" />
+              </colgroup>
+              <thead>
+                <tr>
+                  <th scope="col">Ensaio</th>
+                  <th scope="col">Amostras</th>
+                  <th scope="col">Método</th>
+                  <th scope="col">Resultado</th>
+                  <th scope="col">Ação</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>
+                    <select name="ensaio[]" required>
+                      <option value="">Selecione...</option>
+                      <option value="phi">Pressão hidrostática (PHI)</option>
+                      <option value="vacuo">Vácuo</option>
+                      <option value="dimensional">Dimensional</option>
+                      <option value="marcacoes">Marcações</option>
+                      <option value="achatamento">Achatamento</option>
+                      <option value="calor">Comportamento ao calor</option>
+                      <option value="impacto">Resistência ao impacto</option>
+                      <option value="estanquiedade_anel">Estanquiedade da junta com anel de vedação elastomérico</option>
+                      <option value="mecanica_flexibilidade">Resistência mecânica ou flexibilidade</option>
+                    </select>
+                  </td>
+                  <td>
+                    <select name="amostras[]" required>
+                      <option value="">Selecione...</option>
+                      <option value="01">01</option>
+                      <option value="02">02</option>
+                      <option value="03">03</option>
+                      <option value="04">04</option>
+                      <option value="05">05</option>
+                      <option value="06">06</option>
+                      <option value="07">07</option>
+                      <option value="08">08</option>
+                      <option value="09">09</option>
+                      <option value="10">10</option>
+                      <option value="11">11</option>
+                      <option value="12">12</option>
+                      <option value="13">13</option>
+                      <option value="14">14</option>
+                      <option value="15">15</option>
+                      <option value="20">20</option>
+                      <option value="32">32</option>
+                      <option value="50">50</option>
+                      <option value="80">80</option>
+                      <option value="125">125</option>
+                    </select>
+                  </td>
+                  <td>
+                    <select name="metodo[]" required>
+                      <option value="0.5_kgf_15min">0,5 Kgf/cm² × 15 min</option>
+                      <option value="2_kgf_15min">2 Kgf/cm² × 15 min</option>
+                      <option value="-0.3_bar_15min">-0,3 Bar × 15 min</option>
+                      <option value="gabarito">Gabarito</option>
+                      <option value="visual">Visual</option>
+                      <option value="deflexao_30">Deflexão de (X) 30%</option>
+                      <option value="150c_30min">150º ± 2º × 30 min</option>
+                      <option value="deflexao_ponta_10">Deflexão da ponta ≥10%</option>
+                      <option value="deflexao_bolsa_5">Deflexão da bolsa ≥5%</option>
+                      <option value="diferenca_5">Diferença ≥5%</option>
+                      <option value="deflexao_ang_le_315">Deflexão Angular dn ≤ 315 mm 2º</option>
+                      <option value="deflexao_ang_315_630">Deflexão Angular 315 mm &lt; dn ≤ 630 mm 1,5º</option>
+                      <option value="deflexao_ang_gt_630">Deflexão Angular dn &gt; 630 mm 1º</option>
+                    </select>
+                  </td>
+                  <td>
+                    <select name="resultado[]" required>
+                      <option value="">Selecione...</option>
+                      <option value="aprovado">Aprovado</option>
+                      <option value="reprovado">Reprovado</option>
+                    </select>
+                  </td>
+                  <td><button type="button" class="remover" aria-label="Remover linha">❌</button></td>
+                </tr>
+              </tbody>
+            </table>
+            <div class="table-actions">
+              <button type="button" id="addEnsaio" class="btn">➕ Adicionar linha</button>
+            </div>
+          </fieldset>
+
+          <!-- OBSERVAÇÕES + NORMAS -->
+          <fieldset>
+            <legend>Observações e Normas</legend>
+
+            <div class="field">
+              <label for="observacoes">Observações</label>
+              <!-- Troca de input para textarea para detalhamento livre -->
+              <textarea id="observacoes" name="observacoes" rows="3" placeholder="Registre observações relevantes..." spellcheck="true"></textarea>
+            </div>
+
+            <div class="field">
+              <label for="norma">Norma</label>
+              <select id="norma" name="norma" required>
+                <option value="">Selecione...</option>
+                <option value="7362">7362</option>
+                <option value="5688">5688</option>
+                <option value="7665">7665</option>
+                <option value="5647">5647</option>
+                <option value="5648">5648</option>
+                <option value="NBR 9822">NBR 9822</option>
+                <option value="NBR 7231">NBR 7231</option>
+                <option value="NBR 6483">NBR 6483</option>
+                <option value="NBR 21138">NBR 21138</option>
+                <option value="ABNT NBR 5648:2018">ABNT NBR 5648:2018</option>
+                <option value="ABNT NBR 8219">ABNT NBR 8219</option>
+                <option value="ABNT NBR NM 82">ABNT NBR NM 82</option>
+                <option value="ABNT NBR NM 84">ABNT NBR NM 84</option>
+                <option value="ABNT NBR 14264">ABNT NBR 14264</option>
+                <option value="ABNT NBR 7371">ABNT NBR 7371</option>
+                <option value="EN 62321-3-1:2014">EN 62321-3-1:2014</option>
+                <option value="ISO 13259:2020 B">ISO 13259:2020 — Condição B: com deflexão diametral</option>
+                <option value="ISO 13259:2020 C">ISO 13259:2020 — Condição C: com deflexão angular</option>
+                <option value="ISO 3260:2010 A">ISO 3260:2010 — Método A: Água quente e fria</option>
+                <option value="ISO 3260:2010 B">ISO 3260:2010 — Método B: Água quente e fria</option>
+                <option value="NA">N/A — Não aplicável</option>
+              </select>
+            </div>
+          </fieldset>
+
+          <!-- Fotos -->
+          <fieldset>
+            <legend>Anexar Fotos</legend>
+            <div class="upload-area" id="uploadArea">
+              <p>Arraste suas fotos aqui ou</p>
+              <input type="file" id="fileInput" class="file-input" accept="image/*" multiple>
+              <label for="fileInput" class="upload-btn">Selecionar Fotos</label>
+              <p class="note">Formatos: JPG, PNG. Máx: 5MB cada.</p>
+            </div>
+            <div class="image-preview" id="imagePreview"></div>
+          </fieldset>
+        </form>
+      </section>
+    </div>
+  </main>
+
+  <!-- Rodapé -->
+  <footer class="rodape" role="contentinfo">
+    <div class="container">
+      <small>© <span id="ano"></span> Shiva Conexões — Relatórios digitais.</small>
+    </div>
+  </footer>
+
+  <!-- Diálogo Temas -->
+  <dialog id="dlgTemas" aria-labelledby="dlgTemasTitle">
+    <form method="dialog" id="formTemas">
+      <header>
+        <strong id="dlgTemasTitle">Escolher tema</strong>
+        <button type="button" id="btnFecharDlg" aria-label="Fechar">✖</button>
+      </header>
+
+      <div class="temas-options">
+        <label><input type="radio" name="tema" value="claro" checked><span class="swatch swatch--claro"></span> Claro</label>
+        <label><input type="radio" name="tema" value="escuro"><span class="swatch swatch--escuro"></span> Escuro</label>
+        <label><input type="radio" name="tema" value="marinho"><span class="swatch swatch--marinho"></span> Marinho</label>
+        <label><input type="radio" name="tema" value="sepia"><span class="swatch swatch--sepia"></span> Sépia</label>
+      </div>
+
+      <footer>
+        <button type="button" class="btn" id="btnCancelarDlg">Cancelar</button>
+        <button type="submit" class="btn btn--primary">Aplicar</button>
+      </footer>
+    </form>
+  </dialog>
+
+</body>
+</html>
