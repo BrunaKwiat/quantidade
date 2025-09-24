@@ -259,7 +259,7 @@ function exportarPDF() {
   const dataHora = agora.toLocaleDateString("pt-BR") + " " + agora.toLocaleTimeString("pt-BR");
 
   const logo = new Image();
-  logo.src = "shiva.jpeg";
+  logo.src = "shiva.png";
 
   logo.onload = function () {
     // Cabeçalho
