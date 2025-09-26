@@ -1,3 +1,4 @@
+
 /* ======================================================================
    RQ-504-01 — Registro de Inspeção (script enxuto)
    - Salvar/abrir no navegador (localStorage)
