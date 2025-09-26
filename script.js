@@ -289,9 +289,9 @@ logo.onload = function () {
     doc.setFont("helvetica", "normal");
     doc.setFontSize(10);
     doc.setTextColor(90);
-    doc.text(`Emitido em: ${dataHora}`, 400, 60);
+    doc.text(`Emitido em: ${dataHora}`, 400, 70);
 
-    doc.line(40, 100, 600, 150);
+    doc.line(40, 100, 550, 100);
 
     // 1. Identificação
     doc.setFont("helvetica", "bold");
