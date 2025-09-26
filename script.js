@@ -532,7 +532,7 @@ async function gerarPDF(opts = {}) {
     try {
       const logo = await _getLogoDataURL();
       if (logo) {
-        const w = _logoW; const h = 24;
+        const w = _logoW; const h = 30;
         doc.addImage(logo, "PNG", PAGE.M, y, w, h, undefined, "FAST");
         _logoDrawn = true;
         titleX = PAGE.M + w + 12;
