@@ -258,14 +258,17 @@ function exportarPDF() {
   const agora = new Date();
   const dataHora = agora.toLocaleDateString("pt-BR") + " " + agora.toLocaleTimeString("pt-BR");
 
-  const logo = new Image();
-  logo.src = "shiva.png";
+ const imgWidth = 115;
 
-  logo.onload = function () {
-    // Cabeçalho
-    doc.setDrawColor(225, 38, 45);
-    doc.setLineWidth(1.2);
-    try { doc.addImage(logo, "PNG", 50, 40, 115, 115); } catch {}
+  // Calcula a proporção (altura ajustada automaticamente)
+  const ratio = logo.height / logo.width;
+  const imgHeight = imgWidth * ratio;
+
+  try {
+    doc.addImage(logo, "PNG", 50, 40, imgWidth, imgHeight);
+  } catch (e) {
+    console.error("Erro ao inserir imagem:", e);
+  }
 
     doc.setFont("helvetica", "bold");
     doc.setFontSize(18);
