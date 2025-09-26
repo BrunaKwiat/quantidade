@@ -258,7 +258,16 @@ function exportarPDF() {
   const agora = new Date();
   const dataHora = agora.toLocaleDateString("pt-BR") + " " + agora.toLocaleTimeString("pt-BR");
 
- const imgWidth = 115;
+ const logo = new Image();
+logo.src = "shiva.png";
+
+logo.onload = function () {
+  // Cabeçalho
+  doc.setDrawColor(225, 38, 45);
+  doc.setLineWidth(1.2);
+
+  // Define a largura desejada
+  const imgWidth = 115;
 
   // Calcula a proporção (altura ajustada automaticamente)
   const ratio = logo.height / logo.width;
@@ -269,6 +278,8 @@ function exportarPDF() {
   } catch (e) {
     console.error("Erro ao inserir imagem:", e);
   }
+};
+
 
     doc.setFont("helvetica", "bold");
     doc.setFontSize(18);
