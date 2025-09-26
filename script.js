@@ -267,14 +267,14 @@ logo.onload = function () {
   doc.setLineWidth(1.2);
 
   // Define a largura desejada
-  const imgWidth = 115;
+  const imgWidth = 150;
 
   // Calcula a proporção (altura ajustada automaticamente)
   const ratio = logo.height / logo.width;
   const imgHeight = imgWidth * ratio;
 
   try {
-    doc.addImage(logo, "PNG", 50, 40, imgWidth, imgHeight);
+    doc.addImage(logo, "PNG", 60, 50, imgWidth, imgHeight);
   } catch (e) {
     console.error("Erro ao inserir imagem:", e);
   }
