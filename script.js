@@ -265,7 +265,7 @@ function exportarPDF() {
     // Cabeçalho
     doc.setDrawColor(225, 38, 45);
     doc.setLineWidth(1.2);
-    try { doc.addImage(logo, "PNG", 42, 28, 58, 58); } catch {}
+    try { doc.addImage(logo, "PNG", 42, 28, 72, 72); } catch {}
 
     doc.setFont("helvetica", "bold");
     doc.setFontSize(18);
